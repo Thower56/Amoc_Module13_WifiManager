@@ -2,19 +2,19 @@
 #include <Arduino.h>
 #include <WiFiManager.h>
 #include <uri/UriRegex.h>
-#include <functional>
-#include <ServeurWeb.h>
+
 
 class MyWifiManager {
 public:
-    typedef std::function<void(void)> TFunction;
-    MyWifiManager(){}
-    MyWifiManager(IPAddress p_IpPortal, IPAddress p_Passerelle, IPAddress p_Masque){}
+
+    MyWifiManager();
+    MyWifiManager(IPAddress p_IpPortal, IPAddress p_Passerelle, IPAddress p_Masque);
+    void setParametrePersonnaliser(WiFiManagerParameter& p_parametrePersonnaliser);
+    void getIp();
+    void eraseConfig();
 private:
-    void setSaveParamsCallBack();
-    void setAPCallBack();
+    void setMySaveParamsCallBack();
+    void setMyAPCallBack();
     WiFiManager* m_wifiManager;
-    WiFiManagerParameter m_parametrePersonnalise;
-    char const* SSIDPortail;
-    char const* motPasseAPPortail;
+    WiFiManagerParameter* m_parametrePersonnalise;
 };

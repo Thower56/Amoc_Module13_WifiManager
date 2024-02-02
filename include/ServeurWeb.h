@@ -15,9 +15,6 @@ class ServeurWeb{
     WebServer* m_webServer;
     void afficherRacine();
     void ajouterFichiersStatiques(String const& p_debutNomFichier);
-    void ajouterFichiersStatiques(String const& p_debutNomFichier,
-                                    String const& p_repertoireCourant,
-                                    File& p_fichier);
-                                    
+    void ajouterFichiersStatiques(String const& p_debutNomFichier,String const& p_repertoireCourant,File& p_fichier);            
     void ressourceNonTrouvee(String const& p_nomFichier);
 };
