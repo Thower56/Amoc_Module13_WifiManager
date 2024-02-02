@@ -10,7 +10,7 @@ class ServeurWeb{
     void modifierJson(String p_champ, String p_nouvelleValeur);
     void update();
     void tick();
-
+    void begin();
     private:
     WebServer* m_webServer;
     void afficherRacine();

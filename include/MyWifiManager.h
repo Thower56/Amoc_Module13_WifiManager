@@ -14,7 +14,6 @@ private:
     void setSaveParamsCallBack();
     void setAPCallBack();
     WiFiManager* m_wifiManager;
-    ServeurWeb* m_serveurWeb;
     WiFiManagerParameter m_parametrePersonnalise;
     char const* SSIDPortail;
     char const* motPasseAPPortail;

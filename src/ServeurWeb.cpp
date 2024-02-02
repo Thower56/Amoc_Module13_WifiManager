@@ -24,9 +24,6 @@ ServeurWeb::ServeurWeb()
   this->ajouterFichiersStatiques("/");
   this->m_webServer->on("/", HTTPMethod::HTTP_GET,
                         [this]() { this->afficherRacine(); });
-  
-
-  this->m_webServer->begin();
 }
 
 void ServeurWeb::tick() { 
@@ -50,4 +47,8 @@ void ServeurWeb::ressourceNonTrouvee(const String& p_nomRessource) {
   Serial.println("Ressource '" + p_nomRessource + "' non trouvée !");
   this->m_webServer->send(404, "text/plain",
                           "Ressource '" + p_nomRessource + "' non trouvée !");
+}
+
+void ServeurWeb::begin(){
+  this->m_webServer->begin();
 }
