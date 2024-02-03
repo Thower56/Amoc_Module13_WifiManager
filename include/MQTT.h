@@ -9,6 +9,7 @@ public:
     MQTT(String p_NomUnique);
     bool reconnectMQTTSiNecessaire();
     void envoieMessage();
+    void envoieMessage(String p_Topic, String p_Payload);
     void loop();
 private:
     WiFiClient* m_wifiClient;

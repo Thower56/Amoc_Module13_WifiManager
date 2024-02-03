@@ -8,7 +8,7 @@ Program::Program(){
     IPAddress passerelle(192,168,23,1);
     IPAddress masque(255,255,255,0);
 
-
+    m_BME = new BME();
     m_WifiManager = new MyWifiManager(adresseIP,passerelle,masque);
     m_ServeurWeb = new ServeurWeb();
     m_Button = new Button(25);

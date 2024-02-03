@@ -4,6 +4,7 @@
 #include <Button.h>
 #include <MQTT.h>
 #include <Utilitaire.h>
+#include <BME.h>
 
 class Program{
 public:
@@ -15,4 +16,5 @@ private:
     Button* m_Button;
     MQTT* m_MQTT;
     Timer* m_TimerToSend;
+    BME* m_BME;
 };

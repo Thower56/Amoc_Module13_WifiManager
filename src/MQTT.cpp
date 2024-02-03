@@ -20,6 +20,8 @@ bool MQTT::reconnectMQTTSiNecessaire(){
       Serial.println("Connecté au broker MQTT");
       m_pubSubClient->publish((m_NomUnique + "/status").c_str(), "online");
       m_pubSubClient->subscribe("broadcast/#");
+      m_pubSubClient->subscribe("ESP32{id}/temperature");
+      m_pubSubClient->subscribe("ESP32{id}/temperature/max");
       m_pubSubClient->setCallback(
           [](char* topic, byte* payload, unsigned int length) {
             Serial.print("Message reçu [");
@@ -40,6 +42,18 @@ bool MQTT::reconnectMQTTSiNecessaire(){
                 digitalWrite(LED_BUILTIN, LOW);
               }
             }
+
+            //Temperature
+            if(String(topic) == "ESP32{id}/temperature"){
+              Serial.print("La temperature recus: ");
+              Serial.println(payloadString);
+            }
+
+            //Temperature Max
+            if(String(topic) == "ESP32{id}/temperature/max"){
+              
+            }
+
           });
     } else {
       Serial.print("Echec de connexion au broker MQTT : ");
@@ -52,13 +66,21 @@ bool MQTT::reconnectMQTTSiNecessaire(){
   return m_pubSubClient->connected();
 };
 void MQTT::envoieMessage(){
-     String topic = m_NomUnique + "/data";
-      String payload = String("Hello World! - ") + String(messageId++);
-      Serial.print("Envoi du message [");
-      Serial.print(topic);
-      Serial.print("] ");
-      Serial.println(payload);
-      m_pubSubClient->publish(topic.c_str(), payload.c_str());
+  String topic = m_NomUnique + "/data";
+  String payload = String("Hello World! - ") + String(messageId++);
+  Serial.print("Envoi du message [");
+  Serial.print(topic);
+  Serial.print("] ");
+  Serial.println(payload);
+  m_pubSubClient->publish(topic.c_str(), payload.c_str());
+};
+
+void MQTT::envoieMessage(String p_Topic, String p_Payload){
+  Serial.print("Envoi du message [");
+  Serial.print(p_Topic);
+  Serial.print("] ");
+  Serial.println(p_Payload);
+  m_pubSubClient->publish(p_Topic.c_str(), p_Payload.c_str());
 };
 
 void MQTT::loop(){

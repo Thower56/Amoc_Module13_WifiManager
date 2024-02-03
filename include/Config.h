@@ -10,3 +10,5 @@
 #define MQTT_PORT 1883
 #define MQTT_USER "mqttexplorer"
 #define MQTT_PASSWORD "Bonjour01.+"
+
+#define SEALEVELPRESSURE_HPA (1013.25)
