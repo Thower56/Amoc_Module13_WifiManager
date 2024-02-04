@@ -1,5 +1,6 @@
 #include <Program.h>
 
+
 Program::Program(){
     Serial.begin(115200);
 
@@ -16,6 +17,49 @@ Program::Program(){
 
     String nomUnique = String("ESP32Client") + String(ESP.getEfuseMac(), HEX);
     m_MQTT = new MQTT(nomUnique);
+
+    m_MQTT->setConfig("/sauvegarde/Configuration.json");
+
+    m_MQTT->setCallback(
+        [this](char* topic, byte* payload, unsigned int length) {
+                Serial.print("Message reçu [");
+                Serial.print(topic);
+                Serial.print("] ");
+                String payloadString = "";
+
+                for (int i = 0; i < length; i++) {
+                payloadString += (char)payload[i];
+                }
+                Serial.println(payloadString);
+
+                // DEL
+                if (String(topic) == "broadcast/led") {
+                if (payloadString == "on") {
+                    digitalWrite(LED_BUILTIN, HIGH);
+                } else if (payloadString == "off") {
+                    digitalWrite(LED_BUILTIN, LOW);
+                }
+                }
+
+                //Temperature
+                if(String(topic) == "ESP32{id}/temperature"){
+                    if(payloadString.toInt() > m_TemperatureMax){
+                        digitalWrite(LED_BUILTIN, HIGH);
+                    }
+                    else{
+                        digitalWrite(LED_BUILTIN, LOW);
+                    }
+                    Serial.print("La temperature recus: ");
+                    Serial.println(payloadString);
+                }
+
+                //Temperature Max
+                if(String(topic) == "ESP32{id}/temperature/max"){
+                    m_TemperatureMax = payloadString.toInt();
+                    editJsonPart(LittleFS, "/sauvegarde/statusCompactor.json", "temperature_max", String(m_TemperatureMax));
+                }
+            }
+        );
 
     if(WiFi.isConnected()){
         m_ServeurWeb->begin();

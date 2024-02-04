@@ -18,4 +18,5 @@ private:
 
 String readJson(fs::FS &fs, const char * path);
 void writeJson(fs::FS &fs, const char * path, const String p_Json);
+void editJsonPart(fs::FS &fs, const char * path, const String p_Key, const String p_Value);
 

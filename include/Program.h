@@ -11,6 +11,7 @@ public:
     Program();
     void loop();
 private:
+    int m_TemperatureMax;
     MyWifiManager* m_WifiManager;
     ServeurWeb* m_ServeurWeb;
     Button* m_Button;
