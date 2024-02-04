@@ -3,8 +3,8 @@
 
 Program::Program(){
     Serial.begin(115200);
-
-
+    ajouterFichiersStatiques("/sauvegarde");
+    checkRacine();
     IPAddress adresseIP(192,168,0,1);
     IPAddress passerelle(192,168,23,1);
     IPAddress masque(255,255,255,0);
@@ -13,7 +13,7 @@ Program::Program(){
     m_WifiManager = new MyWifiManager(adresseIP,passerelle,masque);
     m_ServeurWeb = new ServeurWeb();
     m_Button = new Button(25);
-    m_Button->setFunction([this](){ESP.restart(); m_WifiManager->eraseConfig();});
+    m_Button->setFunction([this](){ESP.restart(); m_WifiManager->eraseConfig(); });
 
     String nomUnique = String("ESP32Client") + String(ESP.getEfuseMac(), HEX);
     m_MQTT = new MQTT(nomUnique);
@@ -75,6 +75,7 @@ void Program::loop(){
     if(WiFi.isConnected()){
         m_ServeurWeb->tick();
         m_Button->tick();
+        Serial.println(m_BME->getTemperature());
         if(m_MQTT->reconnectMQTTSiNecessaire()){
             m_MQTT->loop();
             m_TimerToSend->tick();

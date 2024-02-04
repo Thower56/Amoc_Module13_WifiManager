@@ -115,3 +115,59 @@ void editJsonPart(fs::FS &fs, const char * path, const String p_Key, const Strin
             file.print(output);
         }
 };
+
+
+#include <LittleFS.h>
+#define FS LittleFS
+
+void ajouterFichiersStatiques(String const& p_debutNomFichier) {
+  File racine = FS.open("/");
+  ajouterFichiersStatiques(p_debutNomFichier, "", racine);
+}
+
+void ajouterFichiersStatiques(String const& p_debutNomFichier,
+                                          String const& p_repertoireCourant,
+                                          File& p_repertoire) {
+  if (!p_repertoire) return;
+
+  Serial.println(String("Traitement du répertoire : ") + p_repertoire.name());
+
+  File fichier = p_repertoire.openNextFile();
+  while (fichier) {
+    String nomFichier = p_repertoireCourant + "/" + String(fichier.name());
+    if (fichier.isDirectory()) {
+      ajouterFichiersStatiques(p_debutNomFichier, p_repertoireCourant + "/" + fichier.name(), fichier);
+    } else {
+      if (nomFichier.startsWith(p_debutNomFichier)) {
+        Serial.println(String("Ajout du fichier : ") + nomFichier);
+      }
+    }
+    fichier.close();
+    fichier = p_repertoire.openNextFile();
+  }
+
+  p_repertoire.close();
+}
+
+void checkRacine(){
+    if(!LittleFS.begin()){
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+  
+  File file = LittleFS.open("/");
+  if(!file){
+    Serial.println("An Error has occurred while opening the root directory");
+    return;
+  }
+  else{
+    Serial.println("Root directory opened");
+    Serial.println("Files found in root directory:");
+    Serial.println("================================");
+    while(file = file.openNextFile()){
+      Serial.println(file.name());
+      file.close();
+    }
+  }
+    file.close();
+}
