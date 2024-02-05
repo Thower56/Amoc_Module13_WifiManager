@@ -12,11 +12,37 @@ MQTT::MQTT(String p_NomUnique){
 };
 
 void MQTT::incriptionTopic(String p_Topic){
-  m_pubSubClient->subscribe(p_Topic.c_str());
+  bool passer = m_pubSubClient->subscribe(p_Topic.c_str());
+  if(passer){
+    Serial.println("Inscription reussi");
+  }
+  else{
+    Serial.println("Inscription echoué");
+  }
 };
 
-void MQTT::setCallback(Callback p_Callback){
-  m_pubSubClient->setCallback(p_Callback);
+void MQTT::setCallback(){
+  Serial.println("setCallback");
+  m_pubSubClient->setCallback([this](char* topic, byte* payload, unsigned int length) {
+      Serial.print("Message reçu [");
+      Serial.print(topic);
+      Serial.print("] ");
+      String payloadString = "";
+
+      for (int i = 0; i < length; i++) {
+      payloadString += (char)payload[i];
+      }
+      Serial.println(payloadString);
+
+      for(CustomFunction function : m_ListFunction){
+        function(topic, payloadString);
+      }
+  });
+};
+
+void MQTT::setFunction(std::vector<CustomFunction> p_function){
+  m_ListFunction = p_function;
+
 };
 
 void MQTT::setConfig(String p_fileName){
@@ -30,36 +56,44 @@ void MQTT::setConfig(String p_fileName){
     return;
   }
   else{
-    m_pubSubClient->setServer(doc["mqtt_server"].as<String>().c_str(), doc["mqtt_port"]);
+    m_serverAddress = doc["mqtt_server"].as<String>();
+    m_serverPort = doc["mqtt_port"];
+    m_pubSubClient->setServer(m_serverAddress.c_str(), m_serverPort);
+    m_nomUser = doc["mqtt_username"].as<String>();
+    m_Password = doc["mqtt_password"].as<String>();
 
     JsonArray topics = doc["mqtt_topic"].as<JsonArray>();
     for(int i = 0; i < topics.size(); i++){
-      Serial.print("Inscription au topic: ");
-      Serial.println(topics[i].as<String>());
-      incriptionTopic(topics[i].as<String>());
+      Serial.print("topic: ");
+      String newTopics = topics[i].as<String>();
+      newTopics.replace("{id}", m_NomUnique);
+      Serial.println(newTopics);
+      m_ListeTopics.push_back(newTopics);
     }
     Serial.println("Configuration MQTT chargée");
     Serial.print("Nom unique: ");
     Serial.println(m_NomUnique);
     Serial.print("mqtt_server: ");
-    Serial.println(doc["mqtt_server"].as<String>());
+    Serial.println(">" + doc["mqtt_server"].as<String>()+ "<");
     Serial.print("mqtt_port: ");
     Serial.println(doc["mqtt_port"].as<int>());
-
   }
  
 };
 
+
 bool MQTT::reconnectMQTTSiNecessaire(){
-    
   if (!m_pubSubClient->connected()) {
     Serial.println("Connexion au broker MQTT...");
-    if (m_pubSubClient->connect(m_NomUnique.c_str(), MQTT_USER, MQTT_PASSWORD,
+    if (m_pubSubClient->connect(m_NomUnique.c_str(), m_nomUser.c_str(), m_Password.c_str(),
                               (m_NomUnique + "/status").c_str(), 0, 0,
                               "offline")) {
       Serial.println("Connecté au broker MQTT");
       m_pubSubClient->publish((m_NomUnique + "/status").c_str(), "online");
-
+      for(String topic : m_ListeTopics){
+        incriptionTopic(topic);
+      }
+      
     } else {
       Serial.print("Echec de connexion au broker MQTT : ");
       Serial.println(m_pubSubClient->state());

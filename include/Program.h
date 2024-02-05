@@ -18,4 +18,8 @@ private:
     MQTT* m_MQTT;
     Timer* m_TimerToSend;
     BME* m_BME;
+    String nomUnique;
+    void ToggleLed(String p_topic, String p_Payload);
+    void Temperature(String p_topic, String p_Payload);
+    void TemperatureMax(String p_topic, String p_Payload);
 };

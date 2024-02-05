@@ -6,8 +6,8 @@
   "mqtt_topic": [
     "broadcast/#",
     "broadcast/led",
-    "ESP32{id}/temperature",
-    "ESP32{id}/temperature/max"
+    "{id}/temperature",
+    "{id}/temperature/max"
     ],
     "temperature_max": 30
 }

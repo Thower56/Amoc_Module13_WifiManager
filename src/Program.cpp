@@ -3,7 +3,7 @@
 
 Program::Program(){
     Serial.begin(115200);
-    ajouterFichiersStatiques("/sauvegarde");
+    ajouterFichiersStatiques("/");
     checkRacine();
     IPAddress adresseIP(192,168,0,1);
     IPAddress passerelle(192,168,23,1);
@@ -15,67 +15,62 @@ Program::Program(){
     m_Button = new Button(25);
     m_Button->setFunction([this](){ESP.restart(); m_WifiManager->eraseConfig(); });
 
-    String nomUnique = String("ESP32Client") + String(ESP.getEfuseMac(), HEX);
+    nomUnique = String(ESP.getEfuseMac(), HEX);
     m_MQTT = new MQTT(nomUnique);
 
+    
+
+    m_MQTT->setFunction({[this](String p_topic, String p_Payload){ToggleLed(p_topic, p_Payload);},
+                        [this](String p_topic, String p_Payload){Temperature(p_topic, p_Payload);},
+                        [this](String p_topic, String p_Payload){TemperatureMax(p_topic, p_Payload);}});
+
+    m_MQTT->setCallback();
     m_MQTT->setConfig("/sauvegarde/Configuration.json");
-
-    m_MQTT->setCallback(
-        [this](char* topic, byte* payload, unsigned int length) {
-                Serial.print("Message reçu [");
-                Serial.print(topic);
-                Serial.print("] ");
-                String payloadString = "";
-
-                for (int i = 0; i < length; i++) {
-                payloadString += (char)payload[i];
-                }
-                Serial.println(payloadString);
-
-                // DEL
-                if (String(topic) == "broadcast/led") {
-                if (payloadString == "on") {
-                    digitalWrite(LED_BUILTIN, HIGH);
-                } else if (payloadString == "off") {
-                    digitalWrite(LED_BUILTIN, LOW);
-                }
-                }
-
-                //Temperature
-                if(String(topic) == "ESP32{id}/temperature"){
-                    if(payloadString.toInt() > m_TemperatureMax){
-                        digitalWrite(LED_BUILTIN, HIGH);
-                    }
-                    else{
-                        digitalWrite(LED_BUILTIN, LOW);
-                    }
-                    Serial.print("La temperature recus: ");
-                    Serial.println(payloadString);
-                }
-
-                //Temperature Max
-                if(String(topic) == "ESP32{id}/temperature/max"){
-                    m_TemperatureMax = payloadString.toInt();
-                    editJsonPart(LittleFS, "/sauvegarde/statusCompactor.json", "temperature_max", String(m_TemperatureMax));
-                }
-            }
-        );
 
     if(WiFi.isConnected()){
         m_ServeurWeb->begin();
         m_WifiManager->getIp();
     }
 
-    m_TimerToSend = new Timer(5, [this](){m_MQTT->envoieMessage();});
+    m_TimerToSend = new Timer(5, [this](){m_MQTT->envoieMessage(nomUnique + "/temperature", (String)m_BME->getTemperature());});
 
      pinMode(LED_BUILTIN, OUTPUT);
 }
+
+void Program::ToggleLed(String p_topic, String p_Payload){
+    if (String(p_topic) == "broadcast/led") {
+        if (p_Payload == "on") {
+            digitalWrite(LED_BUILTIN, HIGH);
+        } else if (p_Payload == "off") {
+            digitalWrite(LED_BUILTIN, LOW);
+        }
+    }
+};
+void Program::Temperature(String p_topic, String p_Payload){
+    if(String(p_topic) == nomUnique + "/temperature"){
+        if(p_Payload.toInt() > m_TemperatureMax){
+            digitalWrite(LED_BUILTIN, HIGH);
+        }
+        else{
+            digitalWrite(LED_BUILTIN, LOW);
+        }
+        Serial.print("La temperature recus: ");
+        Serial.println(p_Payload);
+    }
+};
+void Program::TemperatureMax(String p_topic, String p_Payload){
+    if(String(p_topic) == (nomUnique + "/temperature/max")){
+        m_TemperatureMax = p_Payload.toInt();
+        Serial.print("Temperature Max: ");
+        Serial.println(m_TemperatureMax);
+        editJsonPart(LittleFS, "/sauvegarde/Configuration.json", "temperature_max", String(m_TemperatureMax));
+    }
+};
 
 void Program::loop(){
     if(WiFi.isConnected()){
         m_ServeurWeb->tick();
         m_Button->tick();
-        Serial.println(m_BME->getTemperature());
         if(m_MQTT->reconnectMQTTSiNecessaire()){
             m_MQTT->loop();
             m_TimerToSend->tick();

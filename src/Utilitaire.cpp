@@ -121,7 +121,7 @@ void editJsonPart(fs::FS &fs, const char * path, const String p_Key, const Strin
 #define FS LittleFS
 
 void ajouterFichiersStatiques(String const& p_debutNomFichier) {
-  File racine = FS.open("/");
+  File racine = LittleFS.open("/");
   ajouterFichiersStatiques(p_debutNomFichier, "", racine);
 }
 
