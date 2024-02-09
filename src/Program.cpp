@@ -14,6 +14,7 @@ Program::Program(){
     m_ServeurWeb = new ServeurWeb();
     m_Button = new Button(25);
     m_Button->setFunction([this](){ESP.restart(); m_WifiManager->eraseConfig(); });
+    m_Joystick = new Joystick(36,39);
 
     nomUnique = String(ESP.getEfuseMac(), HEX);
     m_MQTT = new MQTT(nomUnique);
@@ -22,7 +23,8 @@ Program::Program(){
 
     m_MQTT->setFunction({[this](String p_topic, String p_Payload){ToggleLed(p_topic, p_Payload);},
                         [this](String p_topic, String p_Payload){Temperature(p_topic, p_Payload);},
-                        [this](String p_topic, String p_Payload){TemperatureMax(p_topic, p_Payload);}});
+                        [this](String p_topic, String p_Payload){TemperatureMax(p_topic, p_Payload);},
+                        [this](String p_topic, String p_Payload){ReadJoyStick(p_topic, p_Payload);}});
 
     m_MQTT->setCallback();
     m_MQTT->setConfig("/sauvegarde/Configuration.json");
@@ -33,9 +35,16 @@ Program::Program(){
     }
 
     m_TimerToSend = new Timer(5, [this](){m_MQTT->envoieMessage(nomUnique + "/temperature", (String)m_BME->getTemperature());});
-
-     pinMode(LED_BUILTIN, OUTPUT);
+    m_TimerToSendJoystick = new Timer(0.5, [this](){m_MQTT->envoieMessage(nomUnique + "/joystickX", (String)m_Joystick->getAxisX());});
+    pinMode(LED_BUILTIN, OUTPUT);
 }
+
+void Program::ReadJoyStick(String p_topic, String p_Payload){
+    if(String(p_topic) == nomUnique + "/joystickX"){
+        Serial.print("Joystick X: ");
+        Serial.println(p_Payload);
+    }
+};
 
 void Program::ToggleLed(String p_topic, String p_Payload){
     if (String(p_topic) == "broadcast/led") {
@@ -74,6 +83,7 @@ void Program::loop(){
         if(m_MQTT->reconnectMQTTSiNecessaire()){
             m_MQTT->loop();
             m_TimerToSend->tick();
+            m_TimerToSendJoystick->tick();
         }
     }
 }

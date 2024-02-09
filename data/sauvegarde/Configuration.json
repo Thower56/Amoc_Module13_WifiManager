@@ -1,5 +1,5 @@
 {
-  "mqtt_server": "10.23.208.23",
+  "mqtt_server": "10.201.56.12",
   "mqtt_port": 1883,
   "mqtt_username": "mqttexplorer",
   "mqtt_password": "Bonjour01.+",
@@ -7,7 +7,8 @@
     "broadcast/#",
     "broadcast/led",
     "{id}/temperature",
-    "{id}/temperature/max"
+    "{id}/temperature/max",
+    "{id}/joystickX"
     ],
     "temperature_max": 30
 }

@@ -6,7 +6,6 @@
 
 class MyWifiManager {
 public:
-
     MyWifiManager();
     MyWifiManager(IPAddress p_IpPortal, IPAddress p_Passerelle, IPAddress p_Masque);
     void setParametrePersonnaliser(WiFiManagerParameter& p_parametrePersonnaliser);

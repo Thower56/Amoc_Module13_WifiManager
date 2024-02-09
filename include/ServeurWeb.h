@@ -5,13 +5,13 @@
 class WebServer;
 
 class ServeurWeb{
-    public:
+public:
     ServeurWeb();
     void modifierJson(String p_champ, String p_nouvelleValeur);
     void update();
     void tick();
     void begin();
-    private:
+private:
     WebServer* m_webServer;
     void afficherRacine();
     void ajouterFichiersStatiques(String const& p_debutNomFichier);
